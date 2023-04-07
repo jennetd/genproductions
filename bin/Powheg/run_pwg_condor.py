@@ -17,14 +17,18 @@ TESTING = 0
 QUEUE = ''
 
 
-#POWHEG_SOURCE = "powhegboxV2_rev3828_date20210215.tar.gz"
+#POWHEG_SOURCE = "powhegboxV2_rev3728_date20200429.tar.gz"
 POWHEG_SOURCE = "powhegboxV2_rev3987_date20220622.tar.gz"
-POWHEGRES_SOURCE = "powhegboxRES_rev3748_date20200615.tar.gz"
+POWHEGRES_SOURCE = "powhegboxRES_rev4004_date20221025.tar.gz"
+
 
 rootfolder = os.getcwd()
 
 
-def runCommand(command, printIt = False, doIt = 1, TESTING = 0) :
+def runCommand(command, printIt = False, doIt = 1) :
+    if args.fordag and 'condor_submit' in command:
+        print('No job submission when preparing DAG')
+        return
     if TESTING :
         printIt = 1
         doIt = 0
@@ -78,7 +82,6 @@ def prepareCondorScript( tag, i, folderName, queue, SCALE = '0', njobs = 0, runI
    f.write('transfer_output_files   = "" \n')
    if njobs > 0:
        f.write('queue '+str(njobs)+'\n')
- 
    f.write('\n')
 
    f.close()
@@ -170,6 +173,12 @@ def runParallelXgrid(parstage, xgrid, folderName, nEvents, njobs, powInputName, 
         filename = folderName+'/run_' + jobID + '.sh'
         f = open(filename, 'a')
         #f.write('cd '+rootfolder+'/'+folderName+'/ \n')
+        if process == 'WWJ' :
+          f.write('echo \"Copy TwoLoops grids\"\n')
+          f.write('ls\n') 
+          f.write('wget https://wwwth.mpp.mpg.de/members/wieseman/download/codes/WW_MiNNLO/VVamp_interpolation_grids/WW_MiNNLO_2loop_grids_reduced1.tar.gz\n')
+          f.write('tar xzf WW_MiNNLO_2loop_grids_reduced1.tar.gz\n')
+          f.write('ls\n') 
         f.write('cp -p ' + rootfolder + '/' + folderName + '/powheg.input.'+parstage+'_'+str(xgrid) + ' ./powheg.input' + '\n') # copy input file for this stage explicitly, needed by condor dag
         f.write('echo ' + str(i+1) + ' | ./pwhg_main \n')
         f.write('echo "Workdir after run:" \n')
@@ -193,9 +202,8 @@ def runParallelXgrid(parstage, xgrid, folderName, nEvents, njobs, powInputName, 
 
     else:
         print 'Submitting to condor queues:  \n'
-        condorfile = prepareCondorScript(jobtag, 'multiple', args.folderName, QUEUE, njobs=njobs, runInBatchDir=True, slc6=args.slc6) 
-        runCommand ('condor_submit ' + condorfile + ' -queue '+ str(njobs))
-
+        condorfile = prepareCondorScript(jobtag, 'multiple', args.folderName, QUEUE, njobs=njobs, runInBatchDir=True, slc6=args.slc6)
+        runCommand ('condor_submit ' + condorfile)
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 def runSingleXgrid(parstage, xgrid, folderName, nEvents, powInputName, seed, process, scriptName) :
@@ -275,7 +283,7 @@ def runGetSource(parstage, xgrid, folderName, powInputName, process, noPdfCheck,
     template_dict = {
         "folderName" : folderName,
         "powInputName" : powInputName,
-        "process" : process,
+        "processtemp" : process,
         "noPdfCheck" : noPdfCheck,
         "rootfolder" : rootfolder,
         "patches_dir" : os.path.dirname(os.path.realpath(__file__)) + "/patches",
@@ -290,11 +298,11 @@ def runGetSource(parstage, xgrid, folderName, powInputName, process, noPdfCheck,
         "patch_8" : helpers.runGetSource_patch_8(process),
     }
 
-    fourFlavorProcesses = ["ST_tch_4f", "bbH", "Wbb_dec", "Wbbj", "WWJ"]
+    fourFlavorProcesses = ["ST_tch_4f", "bbH", "Wbb_dec", "Wbbj", "WWJ", "ZZJ", "Zgam", "ZgamJ", "VV_dec_ew"]
     template_dict["isFiveFlavor"] = int(process not in fourFlavorProcesses)
     template_dict["defaultPDF"] = 325300 if template_dict["isFiveFlavor"] else 325500
 
-    powhegResProcesses = ["b_bbar_4l", "HWJ_ew", "HW_ew", "HZJ_ew", "HZ_ew", "vbs-ssww-nloew"]
+    powhegResProcesses = ["b_bbar_4l", "HWJ_ew", "HW_ew", "HZJ_ew", "HZ_ew", "vbs-ssww-nloew", "WWJ", "ZZJ", "HJJ_ew", "LQ-s-chan", "gg4l", "Zgam", "ZgamJ", "VV_dec_ew"]
     if process in powhegResProcesses:
         template_dict["powhegSrc"] = POWHEGRES_SOURCE
         template_dict["svnRepo"] = "svn://powhegbox.mib.infn.it/trunk/POWHEG-BOX-RES"
@@ -351,6 +359,12 @@ def runEvents(parstage, folderName, EOSfolder, njobs, powInputName, jobtag, proc
         filename = folderName+'/run_' + tag + '.sh'
         f = open (filename, 'a')
         #f.write('cd '+rootfolder+'/'+folderName+'/ \n')
+        if process == 'WWJ' :
+          f.write('echo \"Copy TwoLoops grids\"\n')
+          f.write('ls\n') 
+          f.write('wget https://wwwth.mpp.mpg.de/members/wieseman/download/codes/WW_MiNNLO/VVamp_interpolation_grids/WW_MiNNLO_2loop_grids_reduced1.tar.gz\n')
+          f.write('tar xzf WW_MiNNLO_2loop_grids_reduced1.tar.gz\n')
+          f.write('ls\n')
         f.write('cp -p ' + rootfolder + '/' + folderName + '/powheg.input.' + parstage + ' ./powheg.input' + '\n') # copy input file for this stage explicitly, needed by condor dag
         f.write('echo ' + str (i) + ' | ./pwhg_main \n')
         f.write('echo "Workdir after run:" \n')
@@ -374,7 +388,7 @@ def runEvents(parstage, folderName, EOSfolder, njobs, powInputName, jobtag, proc
     else:
         print 'Submitting to condor queues:  \n'
         condorfile = prepareCondorScript(jobtag, 'multiple', args.folderName, QUEUE, njobs=njobs, runInBatchDir=True, slc6=args.slc6) 
-        runCommand ('condor_submit ' + condorfile + ' -queue '+ str(njobs))
+        runCommand ('condor_submit ' + condorfile)
      
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -396,6 +410,7 @@ def createTarBall(parstage, folderName, prcName, keepTop, seed, scriptName) :
         "keepTop" : keepTop,
         "rootfolder" : rootfolder,
         "seed" : seed,
+        "exclude_extra" : "exclude_extra",
     }
 
     template_file = "%s/Templates/createTarBall_template.sh" % rootfolder
@@ -427,8 +442,8 @@ def runhnnlo(folderName, njobs, QUEUE):
 
     print 'Submitting to condor queues \n'
     tagName = 'hnnlo_%s' % scale
-    condorfile = prepareCondorScript(tagName, 'hnnlo', folderName, QUEUE, scale, slc6=args.slc6) 
-    runCommand ('condor_submit ' + condorfile + ' -queue '+ str(njobs))
+    condorfile = prepareCondorScript(tagName, 'hnnlo', folderName, QUEUE, njobs=njobs, runInBatchDir=scale, slc6=args.slc6) 
+    runCommand ('condor_submit ' + condorfile)
    
 
 
@@ -461,6 +476,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args ()
 
+    message2 = "After step 0, you must input the process name _without_ the slash (e.g. HJ/MiNNLOPS must be just HJ)"
+
+    if args.parstage != '0' and '/' in args.prcName:
+        raise RuntimeError(message2)
+
     QUEUE = args.doQueue
     EOSfolder = args.folderName
 
@@ -480,6 +500,10 @@ if __name__ == "__main__":
 
     if (TESTING == 1) :
         print '  --- TESTING, NO submissions will happen ---  '
+        print
+
+    if (args.fordag) :
+        print '  --- Submissions will be done by DAG ---  '
         print
 
     res = os.path.exists(rootfolder+'/'+args.folderName)
@@ -582,7 +606,7 @@ if __name__ == "__main__":
 
             default_pdf = "325300"  # for 5 flavours
 
-            if args.prcName=="ST_tch_4f" or args.prcName=="bbH" or args.prcName=="Wbb_dec" or args.prcName=="Wbbj" or args.prcName=="WWJ" :
+            if args.prcName=="ST_tch_4f" or args.prcName=="bbH" or args.prcName=="Wbb_dec" or args.prcName=="Wbbj" or args.prcName=="WWJ" or args.prcName=="ZZJ" or args.prcName=="Zgam" or args.prcName=="ZgamJ" or args.prcName=="VV_dec_ew":
                 default_pdf = "325500"  # for 4 flavours
 
             for line in open(args.folderName+'/powheg.input') :
@@ -621,8 +645,8 @@ if __name__ == "__main__":
 
         else:
             print 'Submitting to condor queues \n'
-            condorfile = prepareCondorScript(tagName, '', '.', QUEUE, slc6=args.slc6) 
-            runCommand ('condor_submit ' + condorfile + ' -queue 1', TESTING == 0, doIt = (args.fordag == '0'))
+            condorfile = prepareCondorScript(tagName, '', '.', QUEUE, njobs=1, slc6=args.slc6) 
+            runCommand ('condor_submit ' + condorfile)
 
     elif args.parstage == '1' :
         runParallelXgrid(args.parstage, args.xgrid, args.folderName,
@@ -649,8 +673,8 @@ if __name__ == "__main__":
 
         else:
             print 'Submitting to condor queues  \n'
-            condorfile = prepareCondorScript(tagName, '', args.folderName, QUEUE, runInBatchDir=True, slc6=args.slc6) 
-            runCommand ('condor_submit ' + condorfile + ' -queue 1', TESTING == 0, doIt = (args.fordag == '0'))
+            condorfile = prepareCondorScript(tagName, '', args.folderName, QUEUE, njobs=1, runInBatchDir=True, slc6=args.slc6) 
+            runCommand ('condor_submit ' + condorfile)
 
     elif args.parstage == '0123' or args.parstage == 'a' : # compile & run
         tagName = 'all_'+args.folderName
@@ -668,13 +692,12 @@ if __name__ == "__main__":
 
         if QUEUE == 'none':
             print 'Direct compiling and running... \n'
-            #runCommand ('bash run_source.sh ', TESTING == 1)
             os.system('bash '+scriptName+' >& '+
                       scriptName.split('.sh')[0]+'.log &')
         else:
             print 'Submitting to condor queues  \n'
-            condorfile = prepareCondorScript(tagName, '', '.', QUEUE, runInBatchDir=True, slc6=args.slc6) 
-            runCommand ('condor_submit ' + condorfile + ' -queue 1', TESTING == 0, doIt = (args.fordag == '0'))
+            condorfile = prepareCondorScript(tagName, '', '.', QUEUE, njobs=1, runInBatchDir=True, slc6=args.slc6) 
+            runCommand ('condor_submit ' + condorfile)
 
     elif args.parstage == '01239' or args.parstage == 'f' : # full single grid in oneshot
         tagName = 'full_'+args.folderName
@@ -697,8 +720,8 @@ if __name__ == "__main__":
                       scriptName.split('.sh')[0]+'.log')
         else:
             print 'Submitting to condor queues  \n'
-            condorfile = prepareCondorScript(tagName, '', '.', QUEUE, runInBatchDir=True, slc6=args.slc6) 
-            runCommand ('condor_submit ' + condorfile + ' -queue 1', TESTING == 0, doIt = (args.fordag == '0'))
+            condorfile = prepareCondorScript(tagName, '', '.', QUEUE, njobs=1, runInBatchDir=True, slc6=args.slc6) 
+            runCommand ('condor_submit ' + condorfile)
 
     elif args.parstage == '7' :
         print "preparing for NNLO reweighting"
