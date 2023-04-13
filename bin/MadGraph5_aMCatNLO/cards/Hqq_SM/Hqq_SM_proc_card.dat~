@@ -1,0 +1,9 @@
+import model sm
+
+define p = g u u~ d d~ s s~ c c~ b b~
+define q = u u~ d d~ s s~ c c~ b b~
+define j = g u u~ d d~ s s~ c c~ b b~
+
+generate p p > h q q
+
+output Hqq_SM -nojpeg
