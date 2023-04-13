@@ -278,9 +278,19 @@ make_gridpack () {
         sed 's:#.*$::g' $CARDSDIR/${name}_extramodels.dat | while read -r model || [ -n "$model" ]
         do
           #get needed BSM model
-          if [[ $model = *[!\ ]* ]]; then
-            echo "Loading extra model $model"
-            wget --no-check-certificate https://cms-project-generators.web.cern.ch/cms-project-generators/$model	
+	  if [[ $model = *[!\ ]* ]]; then
+	    if [[ $model == "/"* && -f $model ]]; then
+	      echo "Loading extra model from local path $model. Please eventually put it in https://twiki.cern.ch/twiki/bin/view/CMS/GeneratorWebRepo"
+	      cp $model $(basename $model)
+	      model=$(basename $model)
+            elif [[ $model == "/"* ]]; then
+              echo "Local path for extra model $model does not exist, exiting"
+              exit 1
+            else
+              echo "Loading extra model $model from cms-project-generators.web.cern.ch"
+              wget --no-check-certificate https://cms-project-generators.web.cern.ch/cms-project-generators/$modl
+            fi
+	
             cd models
             if [[ $model == *".zip"* ]]; then
               unzip ../$model
@@ -609,7 +619,7 @@ make_gridpack () {
 
       # as of mg29x, it does not generate any event if 'True = gridpack' in the run card
       # generate a few events manually
-      ./run.sh 1000 234567 # nevents seed
+      ./run.sh 1000 234569 # nevents seed
       mv events.lhe.gz $WORKDIR/unweighted_events.lhe.gz
 
       # precompile reweighting if necessary
