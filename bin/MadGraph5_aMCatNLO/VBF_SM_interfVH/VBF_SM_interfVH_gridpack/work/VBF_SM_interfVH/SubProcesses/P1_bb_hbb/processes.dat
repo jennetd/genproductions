@@ -1,0 +1,6 @@
+1       b b > h b b
+mirror  none
+2       b b~ > h b b~
+mirror  b~ b > h b b~
+3       b~ b~ > h b~ b~
+mirror  none
