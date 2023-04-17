@@ -1,5 +1,0 @@
-P1_bb_hbb
-P1_qq_hbbx
-P1_qb_hqb
-P1_bbx_hqq
-P1_qq_hqq
