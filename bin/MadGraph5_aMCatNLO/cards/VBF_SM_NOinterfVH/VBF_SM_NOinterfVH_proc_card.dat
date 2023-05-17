@@ -1,0 +1,9 @@
+import model sm-no_b_mass
+
+define p = g u u~ d d~ s s~ c c~ b b~
+define q = u u~ d d~ s s~ c c~ b b~
+define j = g u u~ d d~ s s~ c c~ b b~
+
+generate p p > h q q $$ w+ w- z QED=4 QCD=0
+
+output VBF_SM_NOinterfVH -nojpeg
