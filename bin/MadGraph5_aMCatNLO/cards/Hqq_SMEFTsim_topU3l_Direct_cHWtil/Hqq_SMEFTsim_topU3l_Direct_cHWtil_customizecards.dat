@@ -134,7 +134,7 @@ set param_card smeftcpv 1 0.e+00
 set param_card smeftcpv 2 0.e+00
 set param_card smeftcpv 3 0.e+00
 set param_card smeftcpv 4 0.e+00
-set param_card smeftcpv 5 0.e+00
+set param_card smeftcpv 5 1.e+00
 set param_card smeftcpv 6 0.e+00
 set param_card smeftcpv 7 0.e+00
 set param_card smeftcpv 8 0.e+00
