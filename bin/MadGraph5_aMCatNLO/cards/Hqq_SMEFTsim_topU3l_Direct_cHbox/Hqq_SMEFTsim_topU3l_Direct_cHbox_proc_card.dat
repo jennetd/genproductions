@@ -4,6 +4,6 @@ define p = g u u~ d d~ s s~ c c~ b b~
 define q = u u~ d d~ s s~ c c~ b b~
 define j = g u u~ d d~ s s~ c c~ b b~
 
-generate p p > h q q QCD=0 QED=4 NP<=1 NP^2==1 SMHLOOP=0 NPprop=0
+generate p p > h q q QCD=0 QED=4 NP<=1 SMHLOOP=0 NPprop=0
 
 output Hqq_SMEFTsim_topU3l_Direct_cHbox -nojpeg
