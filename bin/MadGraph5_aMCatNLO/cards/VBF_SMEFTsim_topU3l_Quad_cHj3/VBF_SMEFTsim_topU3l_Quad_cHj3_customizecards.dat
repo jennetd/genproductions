@@ -27,8 +27,8 @@ set param_card smeft 24 0.e+00
 set param_card smeft 25 0.e+00
 set param_card smeft 26 0.e+00
 set param_card smeft 27 0.e+00
-set param_card smeft 28 0.e+00
-set param_card smeft 29 1.e+00
+set param_card smeft 28 1.e+00
+set param_card smeft 29 0.e+00
 set param_card smeft 30 0.e+00
 set param_card smeft 31 0.e+00
 set param_card smeft 32 0.e+00

@@ -3,10 +3,10 @@ set param_card LambdaSMEFT 1.000000e+03
 set param_card smeft 1 0.e+00
 set param_card smeft 2 0.e+00
 set param_card smeft 3 0.e+00
-set param_card smeft 4 1.e+00
+set param_card smeft 4 0.e+00
 set param_card smeft 5 0.e+00
 set param_card smeft 6 0.e+00
-set param_card smeft 7 0.e+00
+set param_card smeft 7 -1.e+00
 set param_card smeft 8 0.e+00
 set param_card smeft 9 0.e+00
 set param_card smeft 10 0.e+00
